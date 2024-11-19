@@ -32,18 +32,53 @@ const LoginForm = () => {
     return errors;
   };
 
-  const handleSubmit = (e) => {
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+  //   setIsSubmitting(true);
+  //   const errors = validate();
+  //   if (Object.keys(errors).length === 0) {
+  //     console.log('Form data', formValues);
+  //     navigate('/categorization'); 
+  //   } else {
+  //     setFormErrors(errors);
+  //   }
+  //   setIsSubmitting(false);
+  // };
+
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     const errors = validate();
     if (Object.keys(errors).length === 0) {
-      console.log('Form data', formValues);
-      navigate('/categorization'); 
+        try {
+            const response = await fetch('http://localhost:8000/api/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formValues),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Login successful:', data);
+                // Handle successful login, e.g., store user info, redirect, etc.
+                setUser(data.user);
+                navigate('/categorization');
+            } else {
+                const errorData = await response.json();
+                setFormErrors({ general: errorData.detail || 'Login failed' });
+            }
+        } catch (error) {
+            console.error('Error during login:', error);
+            setFormErrors({ general: 'An unexpected error occurred' });
+        }
     } else {
-      setFormErrors(errors);
+        setFormErrors(errors);
     }
     setIsSubmitting(false);
-  };
+};
 
   const handleGoogleSignIn = async () => {
     try {
